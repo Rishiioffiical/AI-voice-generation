@@ -1,0 +1,181 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --canvas-bg: #0B100D;
+  --card-bg: rgba(16, 24, 19, 0.90);
+  --card-border: rgba(255, 255, 255, 0.11);
+  --glass-bg: rgba(20, 30, 24, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --spatial-glow: rgba(56, 217, 169, 0.16);
+  --soundstage-color: #38D9A9;
+  --input-bg: rgba(10, 15, 12, 0.88);
+  --text-primary: #F4FAF5;
+  --text-secondary: #9AB3A0;
+  --accent-color: #E65C6E;
+  --accent-hover: #D44759;
+  --accent-light: rgba(230, 92, 110, 0.16);
+  --tag-bg: rgba(56, 217, 169, 0.12);
+  --specular-line: rgba(255, 255, 255, 0.14);
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    background-color: var(--canvas-bg);
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 100vh;
+    overflow-x: hidden;
+    letter-spacing: 0.005em;
+  }
+}
+
+/* Editorial & Display Typography Classes */
+.font-serif-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-fraunces {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+.font-syne {
+  font-family: 'Syne', sans-serif;
+}
+
+.font-devanagari {
+  font-family: 'Noto Sans Devanagari', 'Rozha One', serif;
+}
+
+.font-mono-script {
+  font-family: 'Space Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-bold-italic {
+  font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.font-display-mashup {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-weight: 800;
+}
+
+.font-mono-numbers {
+  font-family: 'Space Mono', 'Space Grotesk', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================================
+   SPATIAL STUDIO ARCHITECTURE — WebGL-Safe High-Contrast Surfaces
+   (Avoids backdrop-filter over active WebGL canvas for zero GPU/CPU stall)
+   ========================================================================= */
+
+.spatial-canvas {
+  background-color: var(--canvas-bg);
+  background-image:
+    radial-gradient(circle at 50% 0%, var(--spatial-glow) 0%, transparent 58%),
+    radial-gradient(circle at 85% 45%, var(--accent-light) 0%, transparent 48%),
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 56px 56px, 56px 56px;
+  position: relative;
+}
+
+/* Primary Studio Console Surface (Single-elevation architectural panel) */
+.spatial-glass,
+.card-cream {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
+    0 20px 44px -14px rgba(0, 0, 0, 0.65);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.25s ease;
+}
+
+/* Interactive Studio Sub-Panel */
+.spatial-glass-interactive {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+    0 8px 20px -6px rgba(0, 0, 0, 0.45);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.18s ease;
+}
+
+.spatial-glass-interactive:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* Precision Range Scrubber */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: rgba(255, 255, 255, 0.12);
+  height: 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -6px;
+  background: var(--accent-color);
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+}
+
+input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.12);
+  height: 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: var(--accent-color);
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Minimalist Studio Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
