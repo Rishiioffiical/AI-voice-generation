@@ -95,7 +95,7 @@ export const AiScriptEnhancer: React.FC<AiScriptEnhancerProps> = ({
             type="button"
             onClick={() => handleEnhance(btn.id)}
             disabled={activeType !== null}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
               isLoading
                 ? 'bg-[var(--accent-color)] text-white cursor-wait'
                 : activeType !== null

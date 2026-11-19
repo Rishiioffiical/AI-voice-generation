@@ -3,6 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        var isExt = function (str) {
+          return typeof str === 'string' && (str.indexOf('chrome-extension://') !== -1 || str.indexOf('moz-extension://') !== -1);
+        };
+        window.addEventListener(
+          'error',
+          function (e) {
+            var stack = e && e.error && e.error.stack ? String(e.error.stack) : '';
+            if (isExt(e && e.filename) || isExt(stack)) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+          },
+          true
+        );
+        window.addEventListener(
+          'unhandledrejection',
+          function (e) {
+            var reason = e && e.reason;
+            var stack = reason && reason.stack ? String(reason.stack) : String(reason || '');
+            if (isExt(stack)) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+          },
+          true
+        );
+      })();
+    </script>
     <title>Vani AI — VibeCast Hindi &amp; Hinglish Emotional Voice Studio</title>
     <meta name="description" content="Modern AI Text-to-Speech studio specializing in Indian Educational, Hinglish, Hindi Male &amp; English Male voices with 3D acoustic visualization and 24kHz studio export." />
     <meta property="og:title" content="Vani AI — VibeCast Hindi &amp; Hinglish Emotional Voice Studio" />

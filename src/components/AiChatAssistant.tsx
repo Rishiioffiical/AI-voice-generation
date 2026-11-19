@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Send,
   X,
@@ -56,6 +57,20 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   const handleSendMessage = async (customPrompt?: string) => {
     const textToSend = customPrompt || inputPrompt;
@@ -123,48 +138,60 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
     'Cinematic English documentary opening',
   ];
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75">
-      <div className="relative w-full max-w-2xl h-[620px] max-h-[90vh] spatial-glass border border-white/20 rounded-[28px] shadow-2xl flex flex-col overflow-hidden text-white">
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Editorial Scriptwriter AI Assistant"
+      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/80"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl h-[88dvh] sm:h-[620px] max-h-[90dvh] bg-[#101914]/[0.98] border border-white/20 rounded-2xl sm:rounded-[28px] shadow-[0_24px_70px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden text-white"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/12 bg-black/40">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[var(--accent-color)] text-white flex items-center justify-center shadow-sm">
+        <div className="flex items-center justify-between gap-2.5 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/12 bg-black/40 flex-shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[var(--accent-color)] text-white flex items-center justify-center shadow-sm flex-shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-white flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 <span>Editorial Scriptwriter</span>
-                <span className="text-xs font-mono-numbers text-white/55 font-normal">
+                <span className="text-[11px] sm:text-xs font-mono-numbers text-white/55 font-normal">
                   · Google Search Grounded
                 </span>
               </h3>
-              <p className="text-xs text-white/60">
+              <p className="text-xs text-white/60 truncate">
                 Compose Hinglish explainers, Hindi shayaris &amp; broadcast scripts
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-white/[0.08] text-white/80 hover:text-white hover:bg-white/[0.15] flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Close AI assistant"
+            className="w-8 h-8 rounded-xl bg-white/[0.08] text-white/80 hover:text-white hover:bg-white/[0.15] flex items-center justify-center transition-colors cursor-pointer flex-shrink-0 touch-manipulation"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Quick Prompts */}
-        <div className="px-6 py-3 border-b border-white/10 bg-black/25 flex items-center gap-2 overflow-x-auto text-xs">
+        <div className="px-4 sm:px-6 py-2.5 sm:py-3 border-b border-white/10 bg-black/25 flex items-center gap-2 overflow-x-auto text-xs flex-shrink-0">
           <span className="text-xs font-mono-numbers text-white/50 flex-shrink-0">
             Prompts:
           </span>
           {quickPrompts.map((p, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => handleSendMessage(p)}
               disabled={isLoading}
-              className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-[var(--accent-color)] text-white/85 hover:text-white border border-white/12 transition-colors cursor-pointer font-medium whitespace-nowrap"
+              className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-[var(--accent-color)] text-white/85 hover:text-white border border-white/12 transition-colors cursor-pointer font-medium whitespace-nowrap touch-manipulation"
             >
               {p}
             </button>
@@ -172,16 +199,16 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
         </div>
 
         {/* Messages Thread */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4">
           {messages.map((msg) => {
             const isBot = msg.role === 'model';
             return (
               <div
                 key={msg.id}
-                className={`flex gap-3 ${isBot ? 'items-start' : 'items-start flex-row-reverse'}`}
+                className={`flex gap-2.5 sm:gap-3 ${isBot ? 'items-start' : 'items-start flex-row-reverse'}`}
               >
                 <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs ${
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs ${
                     isBot
                       ? 'bg-[var(--accent-color)] text-white'
                       : 'bg-white/[0.12] text-white'
@@ -191,13 +218,13 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
                 </div>
 
                 <div
-                  className={`max-w-[85%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed border ${
+                  className={`max-w-[85%] min-w-0 rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm leading-relaxed border ${
                     isBot
                       ? 'bg-black/45 border-white/12 text-white/95'
                       : 'bg-[var(--accent-color)]/20 border-[var(--accent-color)]/40 text-white'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap font-serif-display text-sm sm:text-base leading-relaxed">
+                  <p className="whitespace-pre-wrap break-words font-serif-display text-sm sm:text-base leading-relaxed">
                     {msg.content}
                   </p>
 
@@ -214,7 +241,7 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
                             href={src.uri}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/12 text-[11px] text-white/85 hover:text-white transition-colors max-w-[240px] truncate"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/12 text-[11px] text-white/85 hover:text-white transition-colors max-w-full sm:max-w-[240px] truncate"
                             title={src.title}
                           >
                             <ExternalLink className="w-3 h-3 text-[#38D9A9] flex-shrink-0" />
@@ -226,10 +253,11 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
                   )}
 
                   {isBot && msg.id !== 'welcome' && (
-                    <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2 justify-end">
+                    <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center gap-2 justify-end">
                       <button
+                        type="button"
                         onClick={() => handleCopy(msg.id, msg.content)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/[0.14] text-xs font-semibold text-white transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/[0.14] text-xs font-semibold text-white transition-colors cursor-pointer touch-manipulation"
                       >
                         {copiedId === msg.id ? (
                           <>
@@ -245,11 +273,12 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => {
                           onInsertScript(msg.content);
                           onClose();
                         }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[var(--accent-color)] hover:opacity-90 text-white font-semibold text-xs transition-opacity cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[var(--accent-color)] hover:opacity-90 text-white font-semibold text-xs transition-opacity cursor-pointer touch-manipulation"
                       >
                         <ArrowRight className="w-3.5 h-3.5" />
                         <span>Use in Studio</span>
@@ -274,7 +303,7 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
         </div>
 
         {/* Input Bar */}
-        <div className="p-4 border-t border-white/12 bg-black/40">
+        <div className="p-3 sm:p-4 border-t border-white/12 bg-black/40 flex-shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -287,12 +316,12 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
               value={inputPrompt}
               onChange={(e) => setInputPrompt(e.target.value)}
               placeholder="Ask for a Hinglish explainer, emotional Hindi shayari, or podcast intro..."
-              className="flex-1 bg-black/50 border border-white/15 focus:border-[var(--accent-color)] text-white placeholder:text-white/40 rounded-xl px-4 py-2.5 text-xs sm:text-sm outline-none transition-colors"
+              className="flex-1 min-w-0 bg-black/50 border border-white/15 focus:border-[var(--accent-color)] text-white placeholder:text-white/40 rounded-xl px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm outline-none transition-colors"
             />
             <button
               type="submit"
               disabled={isLoading || !inputPrompt.trim()}
-              className="px-5 py-2.5 rounded-xl bg-[var(--accent-color)] hover:opacity-90 text-white font-semibold text-xs flex items-center gap-1.5 transition-opacity disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap shrink-0"
+              className="px-4 sm:px-5 py-2.5 rounded-xl bg-[var(--accent-color)] hover:opacity-90 text-white font-semibold text-xs flex items-center gap-1.5 transition-opacity disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap shrink-0 touch-manipulation"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Send</span>
@@ -300,6 +329,7 @@ export const AiChatAssistant: React.FC<AiChatAssistantProps> = ({
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

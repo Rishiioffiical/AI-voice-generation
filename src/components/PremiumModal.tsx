@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Check,
@@ -27,7 +28,21 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
 
   const SUPPORT_EMAIL = 'support@vibecast.studio';
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const handleCopyEmail = async () => {
     try {
@@ -47,29 +62,32 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
     setTimeout(() => setRefreshed(false), 2500);
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-label="VibeCast Studio Pro & Allowance"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/80 overflow-y-auto overscroll-contain"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-xl spatial-glass rounded-[28px] shadow-2xl overflow-hidden max-h-[92vh] flex flex-col border border-white/15"
+        className="relative w-full max-w-xl bg-[#101914]/[0.98] rounded-2xl sm:rounded-[28px] shadow-[0_24px_70px_rgba(0,0,0,0.85)] overflow-hidden max-h-[90dvh] flex flex-col border border-white/20 my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="bg-black/45 text-white px-6 sm:px-8 py-5 flex items-center justify-between border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#E14B5A] text-white flex items-center justify-center shadow-md border border-white/20">
-              <Crown className="w-5 h-5 text-[#F0C05A] fill-[#F0C05A]" />
+        <div className="bg-black/45 text-white px-4 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-3 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#E14B5A] text-white flex items-center justify-center shadow-md border border-white/20 flex-shrink-0">
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-[#F0C05A] fill-[#F0C05A]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <span className="font-bold-italic text-2xl tracking-tight text-white">VibeCast</span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span className="font-bold-italic text-xl sm:text-2xl tracking-tight text-white">VibeCast</span>
                 <span className="font-syne font-black text-[10px] uppercase tracking-widest text-[#F0C05A]">
                   · STUDIO PRO
                 </span>
               </div>
-              <p className="text-xs text-white/65">
+              <p className="text-xs text-white/65 truncate">
                 24kHz Voice Synthesis Allowance &amp; Studio Support
               </p>
             </div>
@@ -78,19 +96,20 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white/80 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Close modal"
+            className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white/80 hover:text-white flex items-center justify-center transition-colors cursor-pointer flex-shrink-0 touch-manipulation"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-6 sm:p-8 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-8 overflow-y-auto overscroll-contain flex-1 min-h-0 space-y-5 sm:space-y-6">
           {/* Studio Perks Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                <Zap className="w-4 h-4 text-[#F0C05A]" />
+                <Zap className="w-4 h-4 text-[#F0C05A] flex-shrink-0" />
                 <span>Daily Quota</span>
               </div>
               <p className="text-[11px] text-white/65 leading-relaxed">
@@ -100,7 +119,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
 
             <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <Sparkles className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <span>24kHz Master Audio</span>
               </div>
               <p className="text-[11px] text-white/65 leading-relaxed">
@@ -110,7 +129,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
 
             <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                <ShieldCheck className="w-4 h-4 text-[#FF8A98]" />
+                <ShieldCheck className="w-4 h-4 text-[#FF8A98] flex-shrink-0" />
                 <span>Voice Lock</span>
               </div>
               <p className="text-[11px] text-white/65 leading-relaxed">
@@ -120,9 +139,9 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
           </div>
 
           {/* Instant Studio Allowance Refresh */}
-          <div className="bg-black/35 border border-white/12 rounded-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
+          <div className="bg-black/35 border border-white/12 rounded-2xl p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="min-w-0">
                 <h4 className="text-sm font-bold font-fraunces text-white">
                   Instant Daily Allowance Refill
                 </h4>
@@ -133,7 +152,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
               <button
                 type="button"
                 onClick={handleInstantRefresh}
-                className="px-4 py-2.5 rounded-xl bg-[#2E4E3B] hover:bg-[#254030] border border-emerald-400/35 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shrink-0"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#2E4E3B] hover:bg-[#254030] border border-emerald-400/35 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0 touch-manipulation"
               >
                 {refreshed ? (
                   <>
@@ -151,9 +170,9 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
           </div>
 
           {/* Contact & Support Box */}
-          <div className="bg-white/[0.03] border border-white/12 rounded-2xl p-5 space-y-3">
+          <div className="bg-white/[0.03] border border-white/12 rounded-2xl p-4 sm:p-5 space-y-3">
             <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-[#FF8A98]" />
+              <Mail className="w-4 h-4 text-[#FF8A98] flex-shrink-0" />
               <h4 className="text-sm font-bold font-fraunces text-white">
                 Studio Support &amp; Custom Voice Inquiries
               </h4>
@@ -163,16 +182,16 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
               For enterprise voiceover pipelines, custom voice calibration, or studio feedback, reach out to the VibeCast team.
             </p>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-black/35 border border-white/10">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#E14B5A]/20 text-[#FF8A98] border border-[#E14B5A]/30 flex items-center justify-center font-bold text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-3.5 rounded-xl bg-black/35 border border-white/10">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-[#E14B5A]/20 text-[#FF8A98] border border-[#E14B5A]/30 flex items-center justify-center font-bold text-xs flex-shrink-0">
                   @
                 </div>
-                <div>
+                <div className="min-w-0">
                   <span className="text-[10px] uppercase font-bold text-white/50 block">
                     Studio Contact
                   </span>
-                  <span className="font-mono-numbers font-bold text-sm text-white">
+                  <span className="font-mono-numbers font-bold text-xs sm:text-sm text-white break-all">
                     {SUPPORT_EMAIL}
                   </span>
                 </div>
@@ -181,7 +200,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopyEmail}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/12 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/12 flex items-center gap-1.5 transition-colors cursor-pointer touch-manipulation"
               >
                 {copiedEmail ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedEmail ? 'Copied' : 'Copy Email'}</span>
@@ -191,19 +210,20 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="bg-black/45 px-6 sm:px-8 py-3.5 border-t border-white/10 flex items-center justify-between text-xs text-white/60">
-          <span className="font-mono-numbers">
+        <div className="bg-black/45 px-4 sm:px-8 py-3.5 border-t border-white/10 flex items-center justify-between gap-2 text-xs text-white/60 flex-shrink-0">
+          <span className="font-mono-numbers truncate">
             VibeCast Studio · 24kHz Audio Workstation
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="font-bold text-[#FF8A98] hover:text-white transition-colors cursor-pointer"
+            className="font-bold text-[#FF8A98] hover:text-white transition-colors cursor-pointer px-2 py-1 touch-manipulation flex-shrink-0"
           >
             Close
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

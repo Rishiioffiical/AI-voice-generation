@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Palette,
   Type,
@@ -10,7 +11,7 @@ import {
   RotateCcw,
   Sliders,
 } from 'lucide-react';
-import { useTheme, ThemeId, FontId, EditorFontSize } from '../contexts/ThemeContext';
+import { useTheme, EditorFontSize } from '../contexts/ThemeContext';
 
 interface ThemeCustomizerModalProps {
   isOpen: boolean;
@@ -34,22 +35,43 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
     fonts,
   } = useTheme();
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in">
+  if (!isOpen || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Studio Appearance Customizer"
+      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/80 overflow-y-auto overscroll-contain"
+    >
       <div
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[36px] spatial-glass border border-white/20 shadow-2xl p-5 sm:p-7 space-y-6 animate-in zoom-in-95 relative"
+        className="w-full max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden rounded-2xl sm:rounded-[32px] border border-white/20 shadow-[0_24px_70px_rgba(0,0,0,0.85)] relative my-auto"
         style={{
+          backgroundColor: currentTheme.canvasBg,
           color: currentTheme.textPrimary,
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#DFD6C7]/50">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-7 py-4 border-b border-white/15 flex-shrink-0 bg-black/35">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shadow-xs flex-shrink-0"
               style={{
                 backgroundColor: currentTheme.accent,
                 color: '#ffffff',
@@ -57,11 +79,11 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
             >
               <Palette className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="text-lg font-bold flex items-center gap-2">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-bold flex flex-wrap items-center gap-2">
                 <span>Studio Appearance</span>
                 <span
-                  className="text-xs uppercase font-syne font-bold px-2 py-0.5 rounded-full"
+                  className="text-[11px] sm:text-xs uppercase font-syne font-bold px-2 py-0.5 rounded-full"
                   style={{
                     backgroundColor: currentTheme.tagBg,
                     color: currentTheme.accent,
@@ -71,7 +93,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                 </span>
               </h3>
               <p
-                className="text-xs"
+                className="text-xs truncate"
                 style={{ color: currentTheme.textSecondary }}
               >
                 Customize color atmosphere and script reading typography
@@ -82,7 +104,8 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+            aria-label="Close modal"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer flex-shrink-0 touch-manipulation"
             style={{
               backgroundColor: currentTheme.inputBg,
               color: currentTheme.textSecondary,
@@ -92,9 +115,11 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
           </button>
         </div>
 
+        {/* Scrollable Content Body */}
+        <div className="p-4 sm:p-7 overflow-y-auto overscroll-contain flex-1 min-h-0 space-y-6">
         {/* Section 1: Themes Gallery */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span
               className="text-xs font-bold uppercase tracking-wider font-syne flex items-center gap-1.5"
               style={{ color: currentTheme.accent }}
@@ -278,8 +303,8 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
         </div>
 
         {/* Section 3: Script Editor Font Size */}
-        <div className="space-y-3 pt-2 border-t border-[#DFD6C7]/50">
-          <div className="flex items-center justify-between">
+        <div className="space-y-3 pt-2 border-t border-white/15">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span
               className="text-xs font-bold uppercase tracking-wider font-syne flex items-center gap-1.5"
               style={{ color: currentTheme.accent }}
@@ -300,7 +325,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
               { id: 'normal' as EditorFontSize, label: 'Normal (16px)', desc: 'Compact view' },
               { id: 'large' as EditorFontSize, label: 'Large (18px)', desc: 'Recommended' },
@@ -312,7 +337,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   key={size.id}
                   type="button"
                   onClick={() => setEditorFontSize(size.id)}
-                  className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                  className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer touch-manipulation ${
                     isSelected
                       ? 'shadow-xs font-bold'
                       : 'hover:opacity-80'
@@ -338,9 +363,10 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
             })}
           </div>
         </div>
+        </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#DFD6C7]/50">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-7 py-3.5 border-t border-white/15 bg-black/35 flex-shrink-0">
           <button
             type="button"
             onClick={() => {
@@ -348,7 +374,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
               setFont('editorial-serif');
               setEditorFontSize('large');
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors cursor-pointer touch-manipulation"
             style={{
               backgroundColor: currentTheme.inputBg,
               color: currentTheme.textSecondary,
@@ -361,7 +387,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider text-white shadow-md transition-all active:scale-95 cursor-pointer"
+            className="px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider text-white shadow-md transition-all active:scale-95 cursor-pointer touch-manipulation"
             style={{
               backgroundColor: currentTheme.accent,
             }}
@@ -370,6 +396,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

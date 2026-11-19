@@ -83,27 +83,29 @@ export const ScriptTranslator: React.FC<ScriptTranslatorProps> = ({
         </div>
 
         {/* Translation Nuance Style Selector */}
-        <div className="flex items-center gap-1 bg-black/35 p-1 rounded-xl border border-white/12 text-xs">
-          {(
-            [
-              { id: 'natural', label: 'Natural' },
-              { id: 'emotional', label: 'Emotional' },
-              { id: 'poetic', label: 'Poetic' },
-            ] as const
-          ).map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setSelectedStyle(s.id)}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                selectedStyle === s.id
-                  ? 'bg-[var(--accent-color)] text-white shadow-xs'
-                  : 'text-white/65 hover:text-white'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
+        <div className="max-w-full overflow-x-auto">
+          <div className="inline-flex items-center gap-1 bg-black/35 p-1 rounded-xl border border-white/12 text-xs">
+            {(
+              [
+                { id: 'natural', label: 'Natural' },
+                { id: 'emotional', label: 'Emotional' },
+                { id: 'poetic', label: 'Poetic' },
+              ] as const
+            ).map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setSelectedStyle(s.id)}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
+                  selectedStyle === s.id
+                    ? 'bg-[var(--accent-color)] text-white shadow-xs'
+                    : 'text-white/65 hover:text-white'
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -114,7 +116,7 @@ export const ScriptTranslator: React.FC<ScriptTranslatorProps> = ({
             type="button"
             onClick={() => handleTranslate('hindi')}
             disabled={isTranslating || !currentText.trim()}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
               targetLangInProgress === 'hindi'
                 ? 'bg-[var(--accent-color)] text-white cursor-wait'
                 : isTranslating || !currentText.trim()
@@ -142,7 +144,7 @@ export const ScriptTranslator: React.FC<ScriptTranslatorProps> = ({
             type="button"
             onClick={() => handleTranslate('english')}
             disabled={isTranslating || !currentText.trim()}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
               targetLangInProgress === 'english'
                 ? 'bg-[#2E4E3B] text-white cursor-wait'
                 : isTranslating || !currentText.trim()
@@ -171,7 +173,7 @@ export const ScriptTranslator: React.FC<ScriptTranslatorProps> = ({
           <button
             type="button"
             onClick={handleUndo}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.07] hover:bg-white/[0.14] text-[var(--accent-color)] border border-white/15 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.07] hover:bg-white/[0.14] text-[var(--accent-color)] border border-white/15 transition-colors cursor-pointer whitespace-nowrap shrink-0 touch-manipulation"
             title="Revert back to your previous script text"
           >
             <Undo2 className="w-3.5 h-3.5" />

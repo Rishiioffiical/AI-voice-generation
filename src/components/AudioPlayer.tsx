@@ -110,16 +110,21 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   }, [volume, isMuted]);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node;
+      if (exportMenuRef.current && !exportMenuRef.current.contains(target)) {
         setShowExportMenu(false);
       }
-      if (optionsMenuRef.current && !optionsMenuRef.current.contains(e.target as Node)) {
+      if (optionsMenuRef.current && !optionsMenuRef.current.contains(target)) {
         setShowOptions(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   const togglePlay = () => {
@@ -257,7 +262,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   return (
-    <div className="w-full rounded-[28px] spatial-glass border border-white/15 shadow-2xl overflow-hidden transition-all text-[var(--text-primary)] relative">
+    <div className="w-full rounded-2xl sm:rounded-[28px] spatial-glass border border-white/15 shadow-2xl transition-all text-[var(--text-primary)] relative">
       {/* Hidden Native Audio Engine — Only render when audioUrl is a valid non-empty URL to prevent React empty src warning */}
       {Boolean(audioUrl && audioUrl.trim()) && (
         <audio
@@ -296,19 +301,19 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       )}
 
       {/* Top Deck Header: Mode Switcher & Actions */}
-      <div className="px-6 py-4 flex items-center justify-between border-b border-white/10">
-        <div className="flex items-center gap-2 text-xs text-white/60 font-mono-numbers">
-          <span className="text-white font-semibold">{voiceName.split('(')[0].trim()}</span>
+      <div className="px-4 sm:px-6 py-3.5 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 border-b border-white/10 rounded-t-2xl sm:rounded-t-[28px]">
+        <div className="flex items-center gap-2 text-xs text-white/60 font-mono-numbers min-w-0">
+          <span className="text-white font-semibold truncate max-w-[140px] sm:max-w-none">{voiceName.split('(')[0].trim()}</span>
           <span aria-hidden="true">·</span>
-          <span>24kHz PCM</span>
+          <span className="whitespace-nowrap">24kHz PCM</span>
         </div>
 
         {/* Segmented Control [ Audio ] [ Script ] */}
-        <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/12">
+        <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/12 max-w-full">
           <button
             type="button"
             onClick={() => setViewMode('audio')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
               viewMode === 'audio'
                 ? 'bg-[var(--accent-color)] text-white shadow-xs'
                 : 'text-white/65 hover:text-white'
@@ -321,7 +326,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('script')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
               viewMode === 'script'
                 ? 'bg-[var(--accent-color)] text-white shadow-xs'
                 : 'text-white/65 hover:text-white'
@@ -333,11 +338,11 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         </div>
 
         {/* Share & More Options */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto sm:ml-0">
           <button
             type="button"
             onClick={handleCopyShareLink}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 text-white text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 text-white text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 touch-manipulation"
             title="Copy Shareable Studio Take Link"
           >
             {isShareLinkCopied ? (
@@ -352,14 +357,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             <button
               type="button"
               onClick={() => setShowOptions((prev) => !prev)}
-              className="w-8 h-8 rounded-xl bg-white/[0.07] text-white border border-white/12 flex items-center justify-center hover:bg-white/[0.14] transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-xl bg-white/[0.07] text-white border border-white/12 flex items-center justify-center hover:bg-white/[0.14] transition-colors cursor-pointer touch-manipulation"
               title="Options & Export Formats"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
 
             {showOptions && (
-              <div className="absolute right-0 top-10 w-60 spatial-glass border border-white/20 rounded-2xl shadow-2xl p-2 z-40 space-y-1 text-white">
+              <div className="absolute right-0 top-10 w-[min(15rem,calc(100vw-2rem))] max-h-[60dvh] overflow-y-auto overscroll-contain bg-[#101914]/[0.98] border border-white/20 rounded-2xl shadow-2xl p-2 z-[60] space-y-1 text-white">
                 <div className="px-3 py-1.5 text-[11px] font-mono-numbers text-white/50 font-semibold border-b border-white/10">
                   Export Audio Format
                 </div>
@@ -368,7 +373,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
                     key={fmt.id}
                     type="button"
                     onClick={() => handleDownload(fmt.id)}
-                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-white hover:bg-white/12 flex items-center justify-between cursor-pointer transition-colors"
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-white hover:bg-white/12 flex items-center justify-between cursor-pointer transition-colors touch-manipulation"
                   >
                     <span className="flex items-center gap-2">
                       <Download className="w-3.5 h-3.5 text-[var(--accent-color)]" />
@@ -386,7 +391,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
                     handleCopy();
                     setShowOptions(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-white hover:bg-white/12 flex items-center gap-2 cursor-pointer transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-white hover:bg-white/12 flex items-center gap-2 cursor-pointer transition-colors touch-manipulation"
                 >
                   {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4 text-white/70" />}
                   <span>{isCopied ? 'Copied!' : 'Copy Script Text'}</span>
@@ -398,7 +403,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       </div>
 
       {/* Main Deck Content */}
-      <div className="px-6 py-5">
+      <div className="px-4 sm:px-6 py-4 sm:py-5">
         {viewMode === 'audio' ? (
           <div className="space-y-4">
             {/* Title & Unboxed Metadata */}
@@ -410,15 +415,15 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 <span aria-hidden="true">·</span>
                 <span>{speedMultiplier.toFixed(2)}x Tempo</span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold-italic text-white leading-snug line-clamp-2">
+              <h2 className="text-base sm:text-xl font-bold-italic text-white leading-snug line-clamp-2 break-words">
                 {scriptSnippet.slice(0, 80).trim() + (scriptSnippet.length > 80 ? '...' : '')}
               </h2>
             </div>
 
             {/* Interactive Harmonic Spectrum Bar Visualizer (Click to Seek) */}
-            <div className="rounded-2xl bg-black/45 border border-white/10 px-4 py-4 space-y-3">
+            <div className="rounded-2xl bg-black/45 border border-white/10 px-3 sm:px-4 py-3.5 sm:py-4 space-y-3">
               <div
-                className="h-20 flex items-end justify-between gap-1 cursor-pointer select-none"
+                className="h-20 flex items-end justify-between gap-[2px] sm:gap-1 cursor-pointer select-none"
                 title="Click any bar to seek along the audio timeline"
               >
                 {waveformBars.map((barHeight, idx) => {
@@ -500,8 +505,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 <span>{isCopied ? 'Copied' : 'Copy Text'}</span>
               </button>
             </div>
-            <div className="max-h-56 overflow-y-auto pr-2">
-              <p className="text-base font-serif-display leading-relaxed text-white/95 whitespace-pre-wrap">
+            <div className="max-h-56 overflow-y-auto overscroll-contain pr-2">
+              <p className="text-sm sm:text-base font-serif-display leading-relaxed text-white/95 whitespace-pre-wrap break-words">
                 {scriptSnippet}
               </p>
             </div>
@@ -510,14 +515,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       </div>
 
       {/* Bottom Transport & Multi-Format Export Deck */}
-      <div className="bg-black/45 border-t border-white/12 text-white px-6 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-black/45 border-t border-white/12 text-white px-4 sm:px-6 py-3.5 sm:py-4 rounded-b-2xl sm:rounded-b-[28px]">
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
           {/* Left: Transport Controls */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <button
               type="button"
               onClick={togglePlay}
-              className="w-12 h-12 rounded-2xl bg-[var(--accent-color)] hover:opacity-95 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all cursor-pointer"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[var(--accent-color)] hover:opacity-95 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all cursor-pointer touch-manipulation"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
@@ -530,7 +535,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             <button
               type="button"
               onClick={() => handleSkipTime(-10)}
-              className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center text-white/85 hover:text-white transition-colors cursor-pointer relative"
+              className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center text-white/85 hover:text-white transition-colors cursor-pointer relative touch-manipulation"
               title="Rewind 10 seconds"
             >
               <RotateCcw className="w-4 h-4" />
@@ -539,7 +544,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             <button
               type="button"
               onClick={handleRestart}
-              className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center text-white/85 hover:text-white transition-colors cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center text-white/85 hover:text-white transition-colors cursor-pointer touch-manipulation"
               title="Restart clip"
             >
               <Repeat className="w-4 h-4" />
@@ -554,7 +559,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
                   const nextSpeed = speeds[(currentIndex + 1) % speeds.length];
                   onSpeedChange(nextSpeed);
                 }}
-                className="px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 text-white text-xs font-semibold font-mono-numbers transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 text-white text-xs font-semibold font-mono-numbers transition-colors cursor-pointer whitespace-nowrap shrink-0 touch-manipulation"
                 title="Cycle playback speed"
               >
                 {speedMultiplier.toFixed(2)}x
@@ -580,13 +585,13 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           </div>
 
           {/* Right: Multi-Format Export Split Button & Dropdown */}
-          <div className="relative flex items-center" ref={exportMenuRef}>
+          <div className="relative flex items-center ml-auto" ref={exportMenuRef}>
             <div className="inline-flex items-center rounded-xl bg-white/[0.08] border border-white/15 shadow-xs overflow-hidden">
               <button
                 type="button"
                 disabled={isExporting}
                 onClick={() => handleDownload(selectedFormat)}
-                className="inline-flex items-center gap-1.5 pl-3.5 pr-3 py-2 hover:bg-white/[0.12] text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60 whitespace-nowrap shrink-0"
+                className="inline-flex items-center gap-1.5 pl-3 sm:pl-3.5 pr-2.5 sm:pr-3 py-2 hover:bg-white/[0.12] text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60 whitespace-nowrap shrink-0 touch-manipulation"
                 title={`Export audio as .${selectedFormat.toUpperCase()}`}
               >
                 {isExporting ? (
@@ -606,7 +611,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
               <button
                 type="button"
                 onClick={() => setShowExportMenu((prev) => !prev)}
-                className="px-2.5 py-2 border-l border-white/15 hover:bg-white/[0.16] text-white/90 hover:text-white transition-colors cursor-pointer flex items-center"
+                className="px-2.5 py-2 border-l border-white/15 hover:bg-white/[0.16] text-white/90 hover:text-white transition-colors cursor-pointer flex items-center touch-manipulation"
                 title="Choose audio export format (MP3, OGG, AAC, WAV)"
                 aria-label="Choose audio export format"
               >
@@ -619,7 +624,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             </div>
 
             {showExportMenu && (
-              <div className="absolute right-0 bottom-full mb-2 w-64 spatial-glass border border-white/20 rounded-2xl shadow-2xl p-2 z-50 space-y-1 text-white">
+              <div className="absolute right-0 bottom-full mb-2 w-[min(16rem,calc(100vw-2rem))] max-h-[60dvh] overflow-y-auto overscroll-contain bg-[#101914]/[0.98] border border-white/20 rounded-2xl shadow-2xl p-2 z-[60] space-y-1 text-white">
                 <div className="px-3 py-1.5 flex items-center justify-between border-b border-white/10">
                   <span className="text-[11px] font-mono-numbers text-white/60 font-semibold flex items-center gap-1.5">
                     <FileAudio className="w-3.5 h-3.5 text-[var(--accent-color)]" />

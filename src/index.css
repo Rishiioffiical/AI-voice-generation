@@ -20,13 +20,21 @@
 }
 
 @layer base {
+  html {
+    overflow-x: clip;
+    max-width: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: var(--text-primary);
     background-color: var(--canvas-bg);
     transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     min-height: 100vh;
-    overflow-x: hidden;
+    min-height: 100dvh;
+    max-width: 100%;
+    overflow-x: clip;
     letter-spacing: 0.005em;
   }
 }
@@ -85,6 +93,17 @@
     linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 56px 56px, 56px 56px;
   position: relative;
+}
+
+/* Non-interactive Ambient Background Orbs (never participate in layout flow or block taps) */
+.spatial-orb {
+  position: fixed;
+  border-radius: 9999px;
+  filter: blur(110px);
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
 }
 
 /* Primary Studio Console Surface (Single-elevation architectural panel) */

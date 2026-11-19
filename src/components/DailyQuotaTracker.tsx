@@ -74,11 +74,11 @@ export const DailyQuotaTracker: React.FC<DailyQuotaTrackerProps> = ({
   return (
     <div className="pt-3 border-t border-white/12 space-y-2.5 text-white">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs min-w-0">
           {isUnlimited ? (
-            <Crown className="w-3.5 h-3.5 text-amber-300" />
+            <Crown className="w-3.5 h-3.5 text-amber-300 flex-shrink-0" />
           ) : (
-            <Zap className="w-3.5 h-3.5 text-[var(--accent-color)]" />
+            <Zap className="w-3.5 h-3.5 text-[var(--accent-color)] flex-shrink-0" />
           )}
           <span className="font-semibold text-white">Daily Studio Quota</span>
           <span className="text-white/40" aria-hidden="true">·</span>
@@ -95,13 +95,13 @@ export const DailyQuotaTracker: React.FC<DailyQuotaTrackerProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {onManualReset && (
             <button
               type="button"
               onClick={handleResetClick}
               disabled={isResetting}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/85 hover:text-white border border-white/12 text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/85 hover:text-white border border-white/12 text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 touch-manipulation"
               title="Refresh daily quota"
             >
               {resetSuccess ? (
@@ -122,7 +122,7 @@ export const DailyQuotaTracker: React.FC<DailyQuotaTrackerProps> = ({
             <button
               type="button"
               onClick={onUpgradeClick}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--accent-color)] hover:opacity-90 text-white text-xs font-semibold transition-opacity cursor-pointer whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--accent-color)] hover:opacity-90 text-white text-xs font-semibold transition-opacity cursor-pointer whitespace-nowrap shrink-0 touch-manipulation"
             >
               <Crown className="w-3 h-3 text-amber-200" />
               <span>Upgrade Unlimited</span>

@@ -58,6 +58,7 @@ import { AiScriptEnhancer } from './components/AiScriptEnhancer';
 import { ScriptTranslator } from './components/ScriptTranslator';
 import { DailyQuotaTracker } from './components/DailyQuotaTracker';
 import { UserAccountBadge } from './components/UserAccountBadge';
+import { AuthModal } from './components/AuthModal';
 import { useAuth, PUBLIC_SIGNUP_CHAR_LIMIT, getLocalDateString } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
 
@@ -66,9 +67,6 @@ const AcousticFieldCanvas = lazy(() =>
 );
 const PremiumModal = lazy(() =>
   import('./components/PremiumModal').then((m) => ({ default: m.PremiumModal }))
-);
-const AuthModal = lazy(() =>
-  import('./components/AuthModal').then((m) => ({ default: m.AuthModal }))
 );
 const AiChatAssistant = lazy(() =>
   import('./components/AiChatAssistant').then((m) => ({ default: m.AiChatAssistant }))
@@ -660,7 +658,7 @@ export default function App() {
   const heroWords = ['Spatial', 'Acoustic', 'Voice', 'Studio'];
 
   return (
-    <div className="min-h-screen spatial-canvas text-[var(--text-primary)] font-['Plus_Jakarta_Sans',sans-serif] relative overflow-x-hidden selection:bg-[var(--accent-color)] selection:text-white">
+    <div className="min-h-dvh w-full max-w-full spatial-canvas text-[var(--text-primary)] font-['Plus_Jakarta_Sans',sans-serif] relative overflow-x-clip selection:bg-[var(--accent-color)] selection:text-white">
       {/* Live Interactive Three.js WebGL Acoustic Field (Code-Split via Suspense) */}
       <Suspense fallback={null}>
         <AcousticFieldCanvas
@@ -674,50 +672,56 @@ export default function App() {
         />
       </Suspense>
 
-      {/* Ambient Atmospheric Glow Layers */}
+      {/* Ambient Atmospheric Glow Layers (strictly clipped & non-interactive) */}
       <div
-        className="spatial-orb -top-24 -left-24 w-96 h-96"
-        style={{ backgroundColor: currentTheme.orbColors[0] }}
-      />
-      <div
-        className="spatial-orb top-1/3 -right-32 w-[32rem] h-[32rem]"
-        style={{ backgroundColor: currentTheme.orbColors[1], animationDelay: '-6s' }}
-      />
+        aria-hidden="true"
+        className="fixed inset-0 overflow-hidden pointer-events-none z-0"
+      >
+        <div
+          className="spatial-orb -top-24 -left-24 w-72 h-72 sm:w-96 sm:h-96"
+          style={{ backgroundColor: currentTheme.orbColors[0] }}
+        />
+        <div
+          className="spatial-orb top-1/3 -right-32 w-80 h-80 sm:w-[32rem] sm:h-[32rem]"
+          style={{ backgroundColor: currentTheme.orbColors[1], animationDelay: '-6s' }}
+        />
+      </div>
 
       {/* 3-Zone Top Bar Contract: [Zone 1: Brand] — [Zone 2: 5 Nav Links] — [Zone 3: Account] */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-4 border-b border-white/10 relative z-10">
-        <div className="flex items-center justify-between gap-4">
+      {/* z-40 keeps header & UserAccountBadge dropdown strictly above main (z-10) so Link Google Account is always clickable */}
+      <header className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:pt-5 sm:pb-4 border-b border-white/10 relative z-40">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
           {/* Zone 1: Brand Wordmark */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink-0">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg border border-white/25 transition-transform hover:scale-105"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shadow-lg border border-white/25 transition-transform hover:scale-105 flex-shrink-0"
               style={{
                 background: `linear-gradient(135deg, ${currentTheme.accent}, #111a14)`,
                 boxShadow: `0 0 18px ${currentTheme.spatialGlow}`,
               }}
             >
-              <Radio className="w-5 h-5 stroke-[2.3] text-white" />
+              <Radio className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.3] text-white" />
             </div>
-            <div>
-              <div className="flex items-baseline gap-1">
-                <span className="font-bold-italic text-2xl text-white tracking-tight">
+            <div className="min-w-0">
+              <div className="flex items-baseline gap-0.5 sm:gap-1 leading-none">
+                <span className="font-bold-italic text-base sm:text-2xl text-white tracking-tight">
                   Vibe
                 </span>
                 <span
-                  className="font-syne font-extrabold text-2xl tracking-tighter uppercase"
+                  className="font-syne font-extrabold text-base sm:text-2xl tracking-tighter uppercase"
                   style={{ color: currentTheme.accent }}
                 >
                   Cast
                 </span>
               </div>
-              <p className="text-[11px] text-white/60 font-medium hidden sm:block">
+              <p className="text-[11px] text-white/60 font-medium hidden sm:block mt-0.5">
                 24kHz Indian &amp; Global Voice Synthesis
               </p>
             </div>
           </div>
 
           {/* Zone 2: Clean Single-Line Studio Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-white/75">
+          <nav className="hidden lg:flex items-center lg:gap-4 xl:gap-6 text-xs font-semibold text-white/75">
             <button
               type="button"
               onClick={() => consoleSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
@@ -758,22 +762,24 @@ export default function App() {
           </nav>
 
           {/* Zone 3: Primary Account & Mobile Actions */}
-          <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
             <button
               type="button"
               onClick={() => setIsChatOpen(true)}
-              className="lg:hidden inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs font-semibold border border-white/12 cursor-pointer"
+              className="lg:hidden inline-flex items-center justify-center gap-1 w-8 h-8 min-[400px]:w-auto min-[400px]:px-2.5 sm:h-9 sm:px-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs font-semibold border border-white/12 cursor-pointer touch-manipulation"
               title="AI Script Assistant"
+              aria-label="Open AI Script Assistant"
             >
-              <Sparkles className="w-3.5 h-3.5" style={{ color: currentTheme.accent }} />
-              <span>AI</span>
+              <Sparkles className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.accent }} />
+              <span className="hidden min-[400px]:inline">AI</span>
             </button>
 
             <button
               type="button"
               onClick={() => setIsThemeModalOpen(true)}
-              className="lg:hidden inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs font-semibold border border-white/12 cursor-pointer"
+              className="lg:hidden inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs font-semibold border border-white/12 cursor-pointer touch-manipulation"
               title="Appearance & Fonts"
+              aria-label="Customize appearance and fonts"
             >
               <Palette className="w-3.5 h-3.5" style={{ color: currentTheme.accent }} />
             </button>
@@ -799,11 +805,11 @@ export default function App() {
       </header>
 
       {/* Main Studio Workstation */}
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 relative z-10">
+      <main className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-6 space-y-5 sm:space-y-6 relative z-10">
         {/* 1-Click Audience Share Showcase Card (renders when someone opens a shared ?take= link) */}
         {sharedTakeBanner && (
-          <div className="spatial-glass rounded-[24px] p-5 border border-emerald-400/40 bg-emerald-950/55 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1.5 flex-1">
+          <div className="spatial-glass rounded-2xl sm:rounded-[24px] p-4 sm:p-5 border border-emerald-400/40 bg-emerald-950/55 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1.5 flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#2E4E3B] text-emerald-200 font-bold border border-emerald-400/35">
                   <Share2 className="w-3.5 h-3.5 text-emerald-300" />
@@ -842,8 +848,8 @@ export default function App() {
 
         {/* Kinetic Editorial Studio HUD Strip & 3D Acoustic Field Controls */}
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-white/10">
-          <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono-numbers uppercase tracking-widest text-white/60">
+          <div className="space-y-1.5 min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] sm:text-[11px] font-mono-numbers uppercase tracking-wider sm:tracking-widest text-white/60">
               <span style={{ color: currentTheme.accent }} className="font-bold">
                 LIVE ACOUSTIC CORE
               </span>
@@ -870,7 +876,7 @@ export default function App() {
             </div>
 
             {/* Staggered Kinetic Word Reveal */}
-            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-white flex flex-wrap items-baseline gap-x-2.5">
+            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-white flex flex-wrap items-baseline gap-x-2 sm:gap-x-2.5">
               {heroWords.map((word, idx) => (
                 <motion.span
                   key={word}
@@ -895,9 +901,9 @@ export default function App() {
           </div>
 
           {/* Interactive 3D Acoustic Field Mode Selector */}
-          <div className="flex flex-wrap items-center gap-2 self-start md:self-end">
+          <div className="w-full md:w-auto max-w-full overflow-x-auto pb-0.5 md:pb-0 self-start md:self-end">
             <div className="inline-flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/12 text-xs">
-              <span className="px-2.5 py-1 text-[10px] font-mono-numbers uppercase tracking-wider text-white/55 hidden sm:inline-flex items-center gap-1">
+              <span className="px-2.5 py-1 text-[10px] font-mono-numbers uppercase tracking-wider text-white/55 hidden sm:inline-flex items-center gap-1 whitespace-nowrap shrink-0">
                 <Layers className="w-3 h-3" />
                 <span>3D Field</span>
               </span>
@@ -913,7 +919,7 @@ export default function App() {
                   key={mode.id}
                   type="button"
                   onClick={() => setVisualMode(mode.id)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
                     visualMode === mode.id
                       ? 'bg-white/15 text-white border border-white/20 shadow-xs'
                       : 'text-white/60 hover:text-white'
@@ -926,29 +932,29 @@ export default function App() {
           </div>
         </section>
 
-        <div ref={consoleSectionRef} className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+        <div ref={consoleSectionRef} className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-7 items-start">
           {/* LEFT COLUMN: Main Voiceover Console & Player (7 cols) */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 min-w-0 space-y-5 sm:space-y-6">
             {/* 1. Script Writing Card with Spatial Studio Surface */}
-            <div className="spatial-glass rounded-[28px] p-6 sm:p-7 shadow-2xl space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
-                <div className="flex items-center gap-2.5">
+            <div className="spatial-glass rounded-2xl sm:rounded-[28px] p-4 sm:p-6 md:p-7 shadow-2xl space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 pb-3 border-b border-white/10">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
                   <label htmlFor="script-textarea" className="text-base text-white">
-                    <span className="font-bold-italic text-lg text-white">Script &amp;</span>{' '}
+                    <span className="font-bold-italic text-base sm:text-lg text-white">Script &amp;</span>{' '}
                     <span
-                      className="font-syne font-bold uppercase tracking-wide text-sm"
+                      className="font-syne font-bold uppercase tracking-wide text-xs sm:text-sm"
                       style={{ color: currentTheme.accent }}
                     >
                       Dialogue Editor
                     </span>
                   </label>
-                  <span className="text-xs text-white/50 font-mono-numbers">
+                  <span className="text-[11px] sm:text-xs text-white/50 font-mono-numbers">
                     · Hindi, Hinglish &amp; English
                   </span>
                 </div>
 
                 {/* Toolbar Buttons: Dictate, Font Selector, Copy, Clear */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <AudioTranscriber
                     onTranscriptionComplete={handleTranscriptionComplete}
                     onError={(err) => setErrorNotice(err)}
@@ -957,17 +963,17 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setIsThemeModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/12 transition-all cursor-pointer active:scale-95"
+                    className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/12 transition-all cursor-pointer active:scale-95 touch-manipulation"
                     title="Change Script Font Style"
                   >
                     <Type className="w-3.5 h-3.5" style={{ color: currentTheme.accent }} />
-                    <span>{currentFont.name}</span>
+                    <span className="truncate max-w-[110px] sm:max-w-none">{currentFont.name}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={handleCopyText}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-white/85 hover:text-white border border-white/12 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-white/85 hover:text-white border border-white/12 transition-colors cursor-pointer touch-manipulation"
                     title="Copy script"
                   >
                     {copiedScript ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -977,7 +983,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={handleClearText}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-rose-500/20 text-white/80 hover:text-rose-200 border border-white/12 hover:border-rose-400/30 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-rose-500/20 text-white/80 hover:text-rose-200 border border-white/12 hover:border-rose-400/30 transition-colors cursor-pointer touch-manipulation"
                     title="Clear text"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -998,11 +1004,11 @@ export default function App() {
                     if (successNotice) setSuccessNotice(null);
                   }}
                   placeholder="Type your Hindi, Hinglish, or English voiceover script here or click 'Dictate' to speak with your mic..."
-                  className={`w-full rounded-2xl p-4 sm:p-5 outline-none transition-all resize-y shadow-inner border border-white/14 focus:border-white/30 bg-black/40 text-white placeholder:text-white/35 ${
+                  className={`w-full min-h-[160px] sm:min-h-[190px] max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y rounded-2xl p-3.5 sm:p-5 outline-none transition-all resize-y shadow-inner border border-white/14 focus:border-white/30 bg-black/40 text-white placeholder:text-white/35 ${
                     editorFontSize === 'normal'
                       ? 'text-base leading-relaxed'
                       : editorFontSize === 'huge'
-                      ? 'text-xl sm:text-2xl leading-loose font-medium'
+                      ? 'text-lg sm:text-2xl leading-loose font-medium'
                       : 'text-base sm:text-lg leading-relaxed'
                   }`}
                   style={{
@@ -1010,7 +1016,7 @@ export default function App() {
                   }}
                 />
 
-                <div className="mt-2.5 flex justify-between items-center text-xs text-white/70 font-mono-numbers px-1">
+                <div className="mt-2.5 flex flex-wrap justify-between items-center gap-1.5 text-xs text-white/70 font-mono-numbers px-1">
                   <span>{wordCount} Words · {charCount} Characters</span>
                   <span className="font-bold text-[#FF8A98]">
                     Est. Duration: ~{estimatedSeconds}s
@@ -1019,21 +1025,21 @@ export default function App() {
 
                 {/* Smart Script Recognition & Locked Voice Status Bar */}
                 <div className="mt-3 p-3 rounded-2xl bg-black/35 border border-white/12 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 min-w-0">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#2E4E3B] text-white font-bold text-[11px] border border-emerald-400/30">
-                      <GraduationCap className="w-3.5 h-3.5 text-emerald-300" />
+                      <GraduationCap className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
                       <span>{scriptRecognition.shortBadge}</span>
                     </span>
-                    <span className="font-medium text-white/85">
+                    <span className="font-medium text-white/85 break-words">
                       {scriptRecognition.accentLabel}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       type="button"
                       onClick={handleToggleVoiceLock}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer touch-manipulation ${
                         isVoiceLocked
                           ? 'bg-[#E14B5A]/20 border-[#FF8A98]/40 text-white'
                           : 'bg-white/[0.06] border-white/15 text-white/75 hover:text-white'
@@ -1087,50 +1093,52 @@ export default function App() {
             </div>
 
             {/* 2. Voice & Performance Settings Card */}
-            <div className="spatial-glass rounded-[28px] p-6 sm:p-7 shadow-2xl space-y-6">
+            <div className="spatial-glass rounded-2xl sm:rounded-[28px] p-4 sm:p-6 md:p-7 shadow-2xl space-y-5 sm:space-y-6">
               {/* Studio Mode Switcher: Solo Voiceover vs 2-Host Podcast Dialogue */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10">
+              <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2 text-xs text-white/80">
-                  <Users className="w-4 h-4 text-emerald-300" />
+                  <Users className="w-4 h-4 text-emerald-300 flex-shrink-0" />
                   <span className="font-bold text-white">Production Format</span>
                 </div>
-                <div className="inline-flex items-center gap-1 bg-black/45 p-1 rounded-xl border border-white/12 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => handleTogglePodcastMode(false)}
-                    className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                      !podcastMode
-                        ? 'bg-[#2E4E3B] text-white border border-emerald-400/35 shadow-xs'
-                        : 'text-white/65 hover:text-white'
-                    }`}
-                  >
-                    Solo Voiceover
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTogglePodcastMode(true)}
-                    className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                      podcastMode
-                        ? 'bg-[#E14B5A] text-white border border-[#FF8A98]/40 shadow-xs'
-                        : 'text-white/65 hover:text-white'
-                    }`}
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    <span>2-Host Podcast</span>
-                  </button>
+                <div className="max-w-full overflow-x-auto">
+                  <div className="inline-flex items-center gap-1 bg-black/45 p-1 rounded-xl border border-white/12 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePodcastMode(false)}
+                      className={`px-2.5 sm:px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
+                        !podcastMode
+                          ? 'bg-[#2E4E3B] text-white border border-emerald-400/35 shadow-xs'
+                          : 'text-white/65 hover:text-white'
+                      }`}
+                    >
+                      Solo Voiceover
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePodcastMode(true)}
+                      className={`px-2.5 sm:px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 touch-manipulation ${
+                        podcastMode
+                          ? 'bg-[#E14B5A] text-white border border-[#FF8A98]/40 shadow-xs'
+                          : 'text-white/65 hover:text-white'
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span>2-Host Podcast</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Voice Filter & Dropdown */}
               <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <label htmlFor="voice-select" className="text-base text-white flex items-center gap-2">
-                      <Volume2 className="w-4 h-4 text-[#FF8A98]" />
-                      <span className="font-bold-italic text-lg text-white">
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label htmlFor="voice-select" className="text-base text-white flex items-center gap-1.5">
+                      <Volume2 className="w-4 h-4 text-[#FF8A98] flex-shrink-0" />
+                      <span className="font-bold-italic text-base sm:text-lg text-white">
                         {podcastMode ? 'Host 1' : 'Voice'}
                       </span>{' '}
-                      <span className="font-syne font-bold uppercase tracking-wider text-sm text-[#FF8A98]">
+                      <span className="font-syne font-bold uppercase tracking-wider text-xs sm:text-sm text-[#FF8A98]">
                         {podcastMode ? 'Lead Voice' : 'Cast'}
                       </span>
                     </label>
@@ -1138,7 +1146,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={handleToggleVoiceLock}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer whitespace-nowrap touch-manipulation ${
                         isVoiceLocked
                           ? 'bg-[#2E4E3B] text-white border-emerald-400/35'
                           : 'bg-white/[0.06] text-white/80 border-white/15 hover:text-white'
@@ -1151,37 +1159,39 @@ export default function App() {
                   </div>
 
                   {/* Filter Tabs */}
-                  <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/12 text-xs">
-                    {(
-                      [
-                        { id: 'all', label: 'All' },
-                        { id: 'hindi-male', label: 'Indian / Hinglish' },
-                        { id: 'english-male', label: 'Eng Male' },
-                        { id: 'female', label: 'Female' },
-                      ] as const
-                    ).map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setVoiceFilter(t.id)}
-                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-semibold ${
-                          voiceFilter === t.id
-                            ? 'bg-[#E14B5A] text-white font-bold shadow-xs'
-                            : 'text-white/70 hover:text-white'
-                        }`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
+                  <div className="w-full sm:w-auto max-w-full overflow-x-auto pb-0.5 sm:pb-0">
+                    <div className="inline-flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/12 text-xs">
+                      {(
+                        [
+                          { id: 'all', label: 'All' },
+                          { id: 'hindi-male', label: 'Indian / Hinglish' },
+                          { id: 'english-male', label: 'Eng Male' },
+                          { id: 'female', label: 'Female' },
+                        ] as const
+                      ).map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setVoiceFilter(t.id)}
+                          className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all cursor-pointer font-semibold whitespace-nowrap shrink-0 touch-manipulation ${
+                            voiceFilter === t.id
+                              ? 'bg-[#E14B5A] text-white font-bold shadow-xs'
+                              : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                <div className="relative">
+                <div className="relative min-w-0">
                   <select
                     id="voice-select"
                     value={selectedVoiceId}
                     onChange={(e) => handleManualVoiceChange(e.target.value)}
-                    className="w-full bg-black/45 border border-white/18 hover:border-white/35 text-white text-base font-semibold rounded-2xl px-4 py-3.5 appearance-none focus:outline-none focus:border-[#E14B5A] cursor-pointer transition-all pr-12 shadow-inner font-serif-display"
+                    className="w-full min-w-0 max-w-full truncate bg-black/45 border border-white/18 hover:border-white/35 text-white text-sm sm:text-base font-semibold rounded-2xl px-3.5 sm:px-4 py-3 sm:py-3.5 appearance-none focus:outline-none focus:border-[#E14B5A] cursor-pointer transition-all pr-10 sm:pr-12 shadow-inner font-serif-display"
                   >
                     {filteredVoiceList.map((v) => (
                       <option key={v.id} value={v.id} className="py-2 bg-[#111915] text-white">
@@ -1190,14 +1200,16 @@ export default function App() {
                     ))}
                   </select>
 
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#FF8A98]">
+                  <div className="absolute right-3.5 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#FF8A98]">
                     <Sliders className="w-4 h-4" />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-white/75 pt-0.5">
-                  <p className="line-clamp-1 italic font-serif-display">{selectedVoice.description}</p>
-                  <span className="font-mono-numbers font-bold text-[#FF8A98] ml-2 flex-shrink-0">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/75 pt-0.5">
+                  <p className="line-clamp-2 sm:line-clamp-1 italic font-serif-display min-w-0 flex-1">
+                    {selectedVoice.description}
+                  </p>
+                  <span className="font-mono-numbers font-bold text-[#FF8A98] flex-shrink-0">
                     {selectedVoice.badge || selectedVoice.accent}
                   </span>
                 </div>
@@ -1205,21 +1217,21 @@ export default function App() {
                 {/* Co-Host Voice Selector when 2-Host Podcast Mode is active */}
                 {podcastMode && (
                   <div className="pt-3 mt-3 border-t border-white/10 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs">
                       <label htmlFor="second-voice-select" className="font-bold text-white flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-emerald-300" />
+                        <Users className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
                         <span>Host 2 · Co-Host Voice Persona</span>
                       </label>
                       <span className="text-[11px] font-mono-numbers text-emerald-300">
                         Prefix lines with &ldquo;Host 1:&rdquo; &amp; &ldquo;Host 2:&rdquo;
                       </span>
                     </div>
-                    <div className="relative">
+                    <div className="relative min-w-0">
                       <select
                         id="second-voice-select"
                         value={secondVoiceId}
                         onChange={(e) => handleManualSecondVoiceChange(e.target.value)}
-                        className="w-full bg-black/45 border border-emerald-400/30 hover:border-emerald-400/50 text-white text-sm font-semibold rounded-2xl px-4 py-3 appearance-none focus:outline-none focus:border-emerald-400 cursor-pointer transition-all pr-12 shadow-inner font-serif-display"
+                        className="w-full min-w-0 max-w-full truncate bg-black/45 border border-emerald-400/30 hover:border-emerald-400/50 text-white text-sm font-semibold rounded-2xl px-3.5 sm:px-4 py-3 appearance-none focus:outline-none focus:border-emerald-400 cursor-pointer transition-all pr-10 sm:pr-12 shadow-inner font-serif-display"
                       >
                         {ALL_VOICES.map((v) => (
                           <option key={v.id} value={v.id} className="py-2 bg-[#111915] text-white">
@@ -1227,7 +1239,7 @@ export default function App() {
                           </option>
                         ))}
                       </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-300">
+                      <div className="absolute right-3.5 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-300">
                         <Sliders className="w-4 h-4" />
                       </div>
                     </div>
@@ -1237,7 +1249,7 @@ export default function App() {
 
               {/* Emotional Mood Selection */}
               <div className="space-y-2.5 pt-3 border-t border-white/10">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-sm font-bold-italic text-white flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#FF8A98]" />
                     <span>Cadence &amp;</span>{' '}
@@ -1258,7 +1270,7 @@ export default function App() {
                         key={em.id}
                         type="button"
                         onClick={() => handleManualEmotionChange(em.id)}
-                        className={`text-left px-3.5 py-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                        className={`text-left px-3 sm:px-3.5 py-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer touch-manipulation ${
                           isEmSelected
                             ? 'bg-[#E14B5A] text-white border-[#FF8A98]/50 shadow-sm font-bold'
                             : 'bg-white/[0.04] hover:bg-white/[0.09] border-white/12 text-white/80 hover:text-white'
@@ -1273,7 +1285,7 @@ export default function App() {
 
               {/* Speed Slider */}
               <div className="space-y-3 pt-3 border-t border-white/10">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <label htmlFor="speed-slider" className="text-sm font-bold-italic text-white flex items-center gap-1.5">
                     <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF8A98]" />
                     <span>Tempo &amp;</span>{' '}
@@ -1297,15 +1309,18 @@ export default function App() {
                   className="w-full"
                 />
 
-                <div className="flex justify-between items-center text-xs text-white/70">
-                  <span className="font-mono-numbers">0.5x Slow</span>
-                  <div className="flex items-center gap-1.5">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-xs text-white/70">
+                  <div className="flex items-center justify-between sm:contents">
+                    <span className="font-mono-numbers text-[11px] sm:text-xs">0.5x Slow</span>
+                    <span className="font-mono-numbers text-[11px] sm:text-xs sm:order-last">2.0x Fast</span>
+                  </div>
+                  <div className="grid grid-cols-4 sm:flex sm:items-center gap-1.5 w-full sm:w-auto">
                     {[0.85, 1.0, 1.15, 1.3].map((val) => (
                       <button
                         key={val}
                         type="button"
                         onClick={() => handleManualSpeedChange(val)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-mono-numbers font-bold transition-all cursor-pointer ${
+                        className={`px-2 sm:px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-mono-numbers font-bold transition-all cursor-pointer text-center touch-manipulation ${
                           Math.abs(speed - val) < 0.03
                             ? 'bg-[#E14B5A] text-white'
                             : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/80 border border-white/12'
@@ -1315,7 +1330,6 @@ export default function App() {
                       </button>
                     ))}
                   </div>
-                  <span className="font-mono-numbers">2.0x Fast</span>
                 </div>
               </div>
 
@@ -1337,7 +1351,7 @@ export default function App() {
                   type="button"
                   onClick={handleGenerateAudio}
                   disabled={isGenerating || !scriptText.trim()}
-                  className={`w-full py-4 px-6 rounded-2xl font-bold text-base tracking-wider uppercase flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xl active:scale-99 ${
+                  className={`w-full py-3.5 sm:py-4 px-4 sm:px-6 rounded-2xl font-bold text-sm sm:text-base tracking-wider uppercase flex items-center justify-center gap-2.5 sm:gap-3 transition-all cursor-pointer shadow-xl active:scale-99 touch-manipulation ${
                     isGenerating
                       ? 'bg-white/15 text-white cursor-wait border border-white/20'
                       : !scriptText.trim()
@@ -1347,16 +1361,16 @@ export default function App() {
                 >
                   {isGenerating ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin flex-shrink-0" />
                       <span className="font-bold-italic font-mono-numbers">
                         Synthesizing ({generationTime.toFixed(1)}s)...
                       </span>
                     </>
                   ) : (
                     <>
-                      <AudioWaveform className="w-5 h-5 text-emerald-300" />
-                      <span className="font-bold-italic text-lg">Synthesize</span>
-                      <span className="font-syne font-bold text-sm tracking-wide text-[#F0C05A]">Voiceover</span>
+                      <AudioWaveform className="w-5 h-5 text-emerald-300 flex-shrink-0" />
+                      <span className="font-bold-italic text-base sm:text-lg">Synthesize</span>
+                      <span className="font-syne font-bold text-xs sm:text-sm tracking-wide text-[#F0C05A]">Voiceover</span>
                     </>
                   )}
                 </button>
@@ -1421,14 +1435,14 @@ export default function App() {
           </div>
 
           {/* RIGHT COLUMN: Script Presets, Session History & Studio Specs (5 cols) */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 min-w-0 space-y-5 sm:space-y-6">
             {/* Curated Scripts Card */}
-            <div ref={presetsSectionRef} className="spatial-glass rounded-[28px] p-6 sm:p-7 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div ref={presetsSectionRef} className="spatial-glass rounded-2xl sm:rounded-[28px] p-4 sm:p-6 md:p-7 shadow-2xl space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4" style={{ color: currentTheme.accent }} />
+                  <BookOpen className="w-4 h-4 flex-shrink-0" style={{ color: currentTheme.accent }} />
                   <h3 className="text-base text-white">
-                    <span className="font-bold-italic text-lg text-white">Curated</span>{' '}
+                    <span className="font-bold-italic text-base sm:text-lg text-white">Curated</span>{' '}
                     <span
                       className="font-syne font-bold uppercase tracking-wider text-xs"
                       style={{ color: currentTheme.accent }}
@@ -1442,16 +1456,16 @@ export default function App() {
                 </span>
               </div>
 
-              <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-80 overflow-y-auto overscroll-contain pr-1">
                 {SAMPLE_SCRIPTS.map((script) => (
                   <button
                     key={script.id}
                     type="button"
                     onClick={() => handleSelectPresetScript(script)}
-                    className="w-full text-left p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/25 transition-all cursor-pointer group"
+                    className="w-full text-left p-3 sm:p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/25 transition-all cursor-pointer group touch-manipulation"
                   >
                     <div className="flex items-center justify-between mb-1.5 gap-2">
-                      <span className="text-sm font-bold-italic text-white group-hover:text-[#FF8A98] transition-colors line-clamp-1">
+                      <span className="text-sm font-bold-italic text-white group-hover:text-[#FF8A98] transition-colors line-clamp-1 min-w-0">
                         {script.title}
                       </span>
                       <span className="text-[10px] uppercase font-mono-numbers text-white/60 font-semibold flex-shrink-0">
@@ -1467,12 +1481,12 @@ export default function App() {
             </div>
 
             {/* Session Takes History & Zero-Loss Audio Vault Card */}
-            <div ref={historySectionRef} className="spatial-glass rounded-[28px] p-6 sm:p-7 shadow-2xl space-y-4">
+            <div ref={historySectionRef} className="spatial-glass rounded-2xl sm:rounded-[28px] p-4 sm:p-6 md:p-7 shadow-2xl space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10">
-                <div className="flex items-center gap-2">
-                  <History className="w-4 h-4" style={{ color: currentTheme.accent }} />
+                <div className="flex flex-wrap items-center gap-2 min-w-0">
+                  <History className="w-4 h-4 flex-shrink-0" style={{ color: currentTheme.accent }} />
                   <h3 className="text-base text-white">
-                    <span className="font-bold-italic text-lg text-white">Studio</span>{' '}
+                    <span className="font-bold-italic text-base sm:text-lg text-white">Studio</span>{' '}
                     <span
                       className="font-syne font-bold uppercase tracking-wider text-xs"
                       style={{ color: currentTheme.accent }}
@@ -1485,11 +1499,11 @@ export default function App() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
                     onClick={handleExportVaultBackup}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-emerald-300 hover:text-white border border-white/12 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-emerald-300 hover:text-white border border-white/12 transition-all cursor-pointer touch-manipulation"
                     title="Export all takes and script drafts to a portable JSON backup file"
                   >
                     <Download className="w-3 h-3" />
@@ -1499,7 +1513,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => vaultImportInputRef.current?.click()}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-amber-300 hover:text-white border border-white/12 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-amber-300 hover:text-white border border-white/12 transition-all cursor-pointer touch-manipulation"
                     title="Restore takes from a VibeCast JSON backup file"
                   >
                     <Upload className="w-3 h-3" />
@@ -1510,7 +1524,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={handleClearHistory}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-white/[0.06] hover:bg-rose-500/20 text-white/75 hover:text-rose-200 border border-white/12 transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-white/[0.06] hover:bg-rose-500/20 text-white/75 hover:text-rose-200 border border-white/12 transition-all cursor-pointer touch-manipulation"
                       title="Clear local recording vault"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -1528,7 +1542,7 @@ export default function App() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                <div className="space-y-2.5 max-h-[380px] overflow-y-auto overscroll-contain pr-1">
                   {clipHistory.map((clip) => {
                     const isActive = activeClip?.id === clip.id;
                     const isHydrating = isHydratingTakeId === clip.id;
@@ -1536,13 +1550,13 @@ export default function App() {
                       <div
                         key={clip.id}
                         onClick={() => handleSelectArchiveTake(clip)}
-                        className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                        className={`flex items-center justify-between gap-2 p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer touch-manipulation ${
                           isActive
                             ? 'bg-[#E14B5A]/25 text-white border-[#FF8A98]/50 shadow-md'
                             : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-white'
                         }`}
                       >
-                        <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 overflow-hidden">
                           <div
                             className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
                               isActive
@@ -1556,7 +1570,7 @@ export default function App() {
                               <Play className="w-4 h-4 fill-current ml-0.5" />
                             )}
                           </div>
-                          <div className="overflow-hidden">
+                          <div className="min-w-0 flex-1 overflow-hidden">
                             <h5 className="text-xs line-clamp-1 font-bold-italic text-white">
                               {clip.title}
                             </h5>
@@ -1570,11 +1584,11 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           <button
                             type="button"
                             onClick={(e) => handleDeleteTake(clip.id, e)}
-                            className="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-rose-300 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-rose-300 transition-colors cursor-pointer touch-manipulation"
                             title="Delete take"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1589,13 +1603,13 @@ export default function App() {
             </div>
 
             {/* Studio Mastering & Quota Card */}
-            <div className="spatial-glass rounded-[28px] p-6 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#2E4E3B] text-emerald-300 flex items-center justify-center font-bold text-xs shadow-sm border border-emerald-400/25">
+            <div className="spatial-glass rounded-2xl sm:rounded-[28px] p-4 sm:p-6 shadow-2xl space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-[#2E4E3B] text-emerald-300 flex items-center justify-center font-bold text-xs shadow-sm border border-emerald-400/25 flex-shrink-0">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-sm font-bold font-fraunces text-white">
                       Studio Master Specs &amp; Quota
                     </h3>
@@ -1606,7 +1620,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleManualQuotaReset}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/[0.08] hover:bg-white/[0.15] text-white border border-white/15 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/[0.08] hover:bg-white/[0.15] text-white border border-white/15 transition-all cursor-pointer whitespace-nowrap touch-manipulation"
                   title="Refresh daily studio character allowance"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-emerald-300" />
@@ -1614,7 +1628,7 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 text-xs font-mono-numbers">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-mono-numbers">
                 <div className="p-3 rounded-xl bg-black/35 border border-white/10">
                   <span className="text-[10px] text-white/50 uppercase block">Export Formats</span>
                   <span className="font-bold text-white mt-0.5 block">WAV · MP3 · OGG · AAC</span>
@@ -1630,6 +1644,14 @@ export default function App() {
           </div>
         </div>
       </main>
+
+      {/* Eagerly mounted AuthModal for instant 0ms Google Account Linking & Studio Pass access */}
+      {isAuthOpen && (
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+        />
+      )}
 
       {/* Lazy-Loaded Studio Modals */}
       <Suspense fallback={null}>
@@ -1652,13 +1674,6 @@ export default function App() {
           />
         )}
 
-        {isAuthOpen && (
-          <AuthModal
-            isOpen={isAuthOpen}
-            onClose={() => setIsAuthOpen(false)}
-          />
-        )}
-
         {isAdminKeyModalOpen && (
           <AdminKeyModal
             isOpen={isAdminKeyModalOpen}
@@ -1676,19 +1691,19 @@ export default function App() {
       </Suspense>
 
       {/* Clean Studio Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 border-t border-white/10 text-xs text-white/60 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono-numbers relative z-10">
-        <div className="flex flex-wrap items-center gap-2">
+      <footer className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-6 border-t border-white/10 text-xs text-white/60 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono-numbers relative z-10 text-center sm:text-left">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
           <span className="font-bold-italic text-sm text-white">VibeCast</span>
           <span>·</span>
           <span>Spatial AI Voice &amp; Podcast Workstation</span>
           <span>·</span>
           <span className="text-emerald-300 font-semibold">Indian &amp; Global Prosody</span>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={() => setIsThemeModalOpen(true)}
-            className="text-white/80 hover:text-white font-semibold cursor-pointer flex items-center gap-1.5 transition-colors"
+            className="text-white/80 hover:text-white font-semibold cursor-pointer flex items-center gap-1.5 transition-colors touch-manipulation"
           >
             <Palette className="w-3.5 h-3.5" style={{ color: currentTheme.accent }} />
             <span>Theme: {currentTheme.name}</span>
@@ -1697,7 +1712,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setIsPremiumOpen(true)}
-            className="text-[#F0C05A] hover:underline font-bold cursor-pointer flex items-center gap-1"
+            className="text-[#F0C05A] hover:underline font-bold cursor-pointer flex items-center gap-1 touch-manipulation"
           >
             <Crown className="w-3.5 h-3.5 fill-current" />
             <span>Studio Pro Info</span>
